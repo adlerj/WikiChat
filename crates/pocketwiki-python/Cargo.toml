@@ -1,0 +1,19 @@
+[package]
+name = "pocketwiki-python"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[lib]
+name = "pocketwiki_rust"
+crate-type = ["cdylib"]
+
+[dependencies]
+pocketwiki-core = { path = "../pocketwiki-core" }
+pyo3 = { version = "0.22", features = ["extension-module"] }
+serde.workspace = true
+serde_json.workspace = true
+
+[build-dependencies]
+pyo3-build-config = "0.22"

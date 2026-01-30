@@ -1,0 +1,24 @@
+[workspace]
+members = ["pocketwiki-core", "pocketwiki-python"]
+resolver = "2"
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+authors = ["PocketWiki Contributors"]
+license = "MIT"
+
+[workspace.dependencies]
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Error handling
+anyhow = "1.0"
+thiserror = "1.0"
+
+# Collections
+ahash = "0.8"
+
+# Compression
+byteorder = "1.5"

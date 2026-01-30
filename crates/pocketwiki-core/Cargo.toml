@@ -1,0 +1,19 @@
+[package]
+name = "pocketwiki-core"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+serde.workspace = true
+serde_json.workspace = true
+anyhow.workspace = true
+thiserror.workspace = true
+ahash.workspace = true
+byteorder.workspace = true
+
+# For text processing
+unicode-segmentation = "1.10"
+
+[dev-dependencies]
