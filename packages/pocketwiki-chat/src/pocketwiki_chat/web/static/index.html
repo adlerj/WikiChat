@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PocketWiki Chat</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>PocketWiki</h1>
+            <span class="subtitle">Offline Wikipedia Search & Chat</span>
+        </header>
+
+        <main class="main">
+            <div class="chat-panel">
+                <div class="messages" id="messages">
+                    <div class="welcome-message">
+                        <p>Ask a question about any topic in Wikipedia.</p>
+                        <p class="hint">Try: "What caused the French Revolution?" or "Explain photosynthesis"</p>
+                    </div>
+                </div>
+
+                <form class="input-form" id="chat-form">
+                    <input
+                        type="text"
+                        id="query-input"
+                        placeholder="Ask a question..."
+                        autocomplete="off"
+                        autofocus
+                    >
+                    <button type="submit" id="send-btn">Send</button>
+                </form>
+            </div>
+
+            <div class="sources-panel" id="sources-panel">
+                <h2>Sources</h2>
+                <div class="sources-list" id="sources-list">
+                    <p class="no-sources">Sources will appear here when you ask a question.</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
