@@ -19,8 +19,8 @@ class TestChunkStage:
         input_file.parent.mkdir(parents=True, exist_ok=True)
 
         articles = [
-            {"id": "1", "title": "Test", "text": "A" * 1000},
-            {"id": "2", "title": "Test2", "text": "B" * 2000},
+            {"id": "1", "title": "Test", "text": " ".join(["word"] * 1000)},  # 1000 words
+            {"id": "2", "title": "Test2", "text": " ".join(["token"] * 2000)},  # 2000 words
         ]
         input_file.write_text("\n".join(json.dumps(a) for a in articles))
 
