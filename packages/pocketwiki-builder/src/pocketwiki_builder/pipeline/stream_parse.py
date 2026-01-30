@@ -208,7 +208,10 @@ class StreamParseStage(Stage):
                 "Streaming Wikipedia dump...", total=None
             )
 
+            last_article = None
             for article in parser.parse(xml_stream):
+                last_article = article
+
                 # Write article as JSON line
                 line = json.dumps(article) + "\n"
                 out_file.write(line)
@@ -245,8 +248,8 @@ class StreamParseStage(Stage):
                 source_etag=source_etag,
                 compressed_bytes_read=compressed_bytes_read,
                 pages_processed=pages_processed,
-                last_page_id=article.get("id") if article else None,
-                last_page_title=article.get("title") if article else None,
+                last_page_id=last_article.get("id") if last_article else None,
+                last_page_title=last_article.get("title") if last_article else None,
                 output_file=str(self.output_file),
                 output_bytes_written=bytes_written,
                 last_checkpoint_time=datetime.utcnow().isoformat(),
