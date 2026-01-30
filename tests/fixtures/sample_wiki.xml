@@ -1,0 +1,77 @@
+<mediawiki xmlns="http://www.mediawiki.org/xml/export-0.10/" version="0.10">
+  <page>
+    <title>Albert Einstein</title>
+    <ns>0</ns>
+    <id>736</id>
+    <revision>
+      <id>1001</id>
+      <timestamp>2024-01-01T00:00:00Z</timestamp>
+      <contributor>
+        <username>TestUser</username>
+        <id>1</id>
+      </contributor>
+      <text xml:space="preserve">'''Albert Einstein''' (14 March 1879 – 18 April 1955) was a German-born theoretical physicist, widely held to be one of the greatest and most influential scientists of all time. Best known for developing the theory of relativity, Einstein also made important contributions to quantum mechanics.</text>
+    </revision>
+  </page>
+  <page>
+    <title>Python (programming language)</title>
+    <ns>0</ns>
+    <id>23862</id>
+    <revision>
+      <id>1002</id>
+      <timestamp>2024-01-01T00:00:00Z</timestamp>
+      <contributor>
+        <username>TestUser</username>
+        <id>1</id>
+      </contributor>
+      <text xml:space="preserve">'''Python''' is a high-level, general-purpose programming language. Its design philosophy emphasizes code readability with the use of significant indentation. Python is dynamically typed and garbage-collected.</text>
+    </revision>
+  </page>
+  <page>
+    <title>Quantum mechanics</title>
+    <ns>0</ns>
+    <id>25433</id>
+    <revision>
+      <id>1003</id>
+      <timestamp>2024-01-01T00:00:00Z</timestamp>
+      <contributor>
+        <username>TestUser</username>
+        <id>1</id>
+      </contributor>
+      <text xml:space="preserve">'''Quantum mechanics''' is a fundamental theory in physics that provides a description of the physical properties of nature at the scale of atoms and subatomic particles. It is the foundation of all quantum physics including quantum chemistry, quantum field theory, quantum technology, and quantum information science.</text>
+    </revision>
+  </page>
+  <page>
+    <title>Wikipedia:Redirect</title>
+    <ns>4</ns>
+    <id>5000</id>
+    <redirect title="Help:Redirect"/>
+    <revision>
+      <id>1004</id>
+      <timestamp>2024-01-01T00:00:00Z</timestamp>
+      <contributor>
+        <username>TestUser</username>
+        <id>1</id>
+      </contributor>
+      <text xml:space="preserve">#REDIRECT [[Help:Redirect]]</text>
+    </revision>
+  </page>
+  <page>
+    <title>Physics (disambiguation)</title>
+    <ns>0</ns>
+    <id>5001</id>
+    <revision>
+      <id>1005</id>
+      <timestamp>2024-01-01T00:00:00Z</timestamp>
+      <contributor>
+        <username>TestUser</username>
+        <id>1</id>
+      </contributor>
+      <text xml:space="preserve">{{disambiguation}}
+'''Physics''' may refer to:
+* [[Physics]], the natural science
+* [[Metaphysics]], philosophy
+</text>
+    </revision>
+  </page>
+</mediawiki>
