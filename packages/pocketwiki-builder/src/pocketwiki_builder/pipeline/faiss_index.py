@@ -40,22 +40,31 @@ class FAISSIndexStage(Stage):
 
         # Load embeddings
         embeddings = np.load(self.config.embeddings_file).astype("float32")
-        dimension = embeddings.shape[1]
+        n_vectors, dimension = embeddings.shape
 
-        # Create IVF-PQ index
-        quantizer = faiss.IndexFlatL2(dimension)
-        index = faiss.IndexIVFPQ(
-            quantizer,
-            dimension,
-            self.config.n_clusters,
-            self.config.n_subquantizers,
-            self.config.bits_per_code,
-        )
+        # Use simpler index for small datasets
+        if n_vectors < self.config.n_clusters * 2:
+            # Use flat index for small datasets (no training needed)
+            print(f"Using flat index for {n_vectors} vectors (< {self.config.n_clusters * 2})")
+            index = faiss.IndexFlatIP(dimension)
+            # Normalize for inner product similarity
+            faiss.normalize_L2(embeddings)
+            index.add(embeddings)
+        else:
+            # Create IVF-PQ index for large datasets
+            quantizer = faiss.IndexFlatL2(dimension)
+            index = faiss.IndexIVFPQ(
+                quantizer,
+                dimension,
+                self.config.n_clusters,
+                self.config.n_subquantizers,
+                self.config.bits_per_code,
+            )
 
-        # Train and add vectors
-        print("Training FAISS index...")
-        index.train(embeddings)
-        index.add(embeddings)
+            # Train and add vectors
+            print("Training FAISS index...")
+            index.train(embeddings)
+            index.add(embeddings)
 
         # Save index
         faiss.write_index(index, str(self.output_file))
