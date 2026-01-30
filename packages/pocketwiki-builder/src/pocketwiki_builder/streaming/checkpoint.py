@@ -44,6 +44,8 @@ class CheckpointManager:
         self.pages_since_checkpoint = 0
         self.bytes_since_checkpoint = 0
         self.last_checkpoint_time = time.time()
+        self.last_checkpoint_pages = 0
+        self.last_checkpoint_bytes = 0
 
     def _compute_config_hash(self) -> str:
         """Compute hash of configuration.
@@ -107,18 +109,20 @@ class CheckpointManager:
         Returns:
             True if checkpoint should be created
         """
+        # Store last values for reset_counters
+        self._last_pages = pages_processed
+        self._last_bytes = bytes_written
+
+        # Calculate delta since last checkpoint
+        pages_delta = pages_processed - self.last_checkpoint_pages
+        bytes_delta = bytes_written - self.last_checkpoint_bytes
+
         # Check page count
-        if (
-            pages_processed - self.pages_since_checkpoint
-            >= self.config.checkpoint_every_pages
-        ):
+        if pages_delta >= self.config.checkpoint_every_pages:
             return True
 
         # Check bytes written
-        if (
-            bytes_written - self.bytes_since_checkpoint
-            >= self.config.checkpoint_every_bytes
-        ):
+        if bytes_delta >= self.config.checkpoint_every_bytes:
             return True
 
         # Check time elapsed
@@ -129,9 +133,17 @@ class CheckpointManager:
         return False
 
     def reset_counters(self) -> None:
-        """Reset checkpoint counters after checkpoint created."""
+        """Reset checkpoint counters after checkpoint created.
+
+        Uses the last values passed to should_checkpoint.
+        """
         self.last_checkpoint_time = time.time()
-        # Don't reset page/byte counters, use absolute values
+        if hasattr(self, '_last_pages'):
+            self.last_checkpoint_pages = self._last_pages
+        if hasattr(self, '_last_bytes'):
+            self.last_checkpoint_bytes = self._last_bytes
+        self.pages_since_checkpoint = 0
+        self.bytes_since_checkpoint = 0
 
     def is_checkpoint_valid(self) -> bool:
         """Check if checkpoint is valid for resuming.

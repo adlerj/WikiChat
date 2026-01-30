@@ -54,7 +54,7 @@ class Stage(ABC):
         Returns:
             Path to {stage_name}.state.json
         """
-        return self.work_dir / "state" / f"{self.get_stage_name()}.state.json"
+        return self.work_dir / f"{self.get_stage_name()}.state.json"
 
     def get_output_files(self) -> list[Path]:
         """Get list of output files produced by this stage.

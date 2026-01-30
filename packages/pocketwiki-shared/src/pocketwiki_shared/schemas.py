@@ -2,30 +2,29 @@
 from datetime import datetime
 from typing import Optional
 
-from pydantic import BaseModel, Field, HttpUrl
+from pydantic import BaseModel, ConfigDict, Field, HttpUrl
 
 
 class StreamParseCheckpoint(BaseModel):
     """Checkpoint data for streaming parser."""
 
-    source_url: HttpUrl
-    source_etag: Optional[str] = None
-    compressed_bytes_read: int = Field(ge=0)
-    pages_processed: int = Field(ge=0)
-    last_page_id: Optional[str] = None
-    last_page_title: Optional[str] = None
-    output_file: str
-    output_bytes_written: int = Field(ge=0, default=0)
-    last_checkpoint_time: str  # ISO format datetime
-    checkpoint_version: int = 1
-    config_hash: Optional[str] = None
-
-    class Config:
-        """Pydantic config."""
-
-        json_encoders = {
+    model_config = ConfigDict(
+        json_encoders={
             datetime: lambda v: v.isoformat(),
         }
+    )
+
+    source_url: HttpUrl
+    source_etag: Optional[str] = None
+    compressed_bytes_read: int = Field(ge=0, default=0)
+    pages_processed: int = Field(ge=0, default=0)
+    last_page_id: Optional[str] = None
+    last_page_title: Optional[str] = None
+    output_file: str = ""
+    output_bytes_written: int = Field(ge=0, default=0)
+    last_checkpoint_time: str = ""  # ISO format datetime
+    checkpoint_version: int = 1
+    config_hash: Optional[str] = None
 
 
 class StreamParseConfig(BaseModel):
