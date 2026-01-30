@@ -4,6 +4,7 @@ from pathlib import Path
 
 import faiss
 import numpy as np
+from rich.progress import Progress, SpinnerColumn, TextColumn, TimeElapsedColumn
 
 from pocketwiki_shared.base import Stage
 from pocketwiki_shared.schemas import FAISSConfig
@@ -39,33 +40,68 @@ class FAISSIndexStage(Stage):
         self.output_file.parent.mkdir(parents=True, exist_ok=True)
 
         # Load embeddings
+        print(f"\n  Loading embeddings from: {self.config.embeddings_file}")
         embeddings = np.load(self.config.embeddings_file).astype("float32")
         n_vectors, dimension = embeddings.shape
+        print(f"  Loaded {n_vectors:,} vectors of dimension {dimension}")
 
         # Use simpler index for small datasets
-        if n_vectors < self.config.n_clusters * 2:
-            # Use flat index for small datasets (no training needed)
-            print(f"Using flat index for {n_vectors} vectors (< {self.config.n_clusters * 2})")
-            index = faiss.IndexFlatIP(dimension)
-            # Normalize for inner product similarity
-            faiss.normalize_L2(embeddings)
-            index.add(embeddings)
-        else:
-            # Create IVF-PQ index for large datasets
-            quantizer = faiss.IndexFlatL2(dimension)
-            index = faiss.IndexIVFPQ(
-                quantizer,
-                dimension,
-                self.config.n_clusters,
-                self.config.n_subquantizers,
-                self.config.bits_per_code,
-            )
+        threshold = self.config.n_clusters * 2
 
-            # Train and add vectors
-            print("Training FAISS index...")
-            index.train(embeddings)
-            index.add(embeddings)
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("[progress.description]{task.description}"),
+            TimeElapsedColumn(),
+        ) as progress:
+            if n_vectors < threshold:
+                # Use flat index for small datasets (no training needed)
+                print(f"\n  Index selection: FLAT (exact search)")
+                print(f"    Reason: {n_vectors:,} vectors < threshold of {threshold:,}")
+                print(f"    Index type: IndexFlatIP (inner product)")
+                index = faiss.IndexFlatIP(dimension)
+
+                # Normalize for inner product similarity
+                task = progress.add_task("Normalizing vectors...", total=None)
+                faiss.normalize_L2(embeddings)
+                progress.update(task, completed=True)
+
+                # Add vectors to index
+                task = progress.add_task(f"Adding {n_vectors:,} vectors to index...", total=None)
+                index.add(embeddings)
+                progress.update(task, completed=True)
+            else:
+                # Create IVF-PQ index for large datasets
+                print(f"\n  Index selection: IVF-PQ (approximate search)")
+                print(f"    Reason: {n_vectors:,} vectors >= threshold of {threshold:,}")
+                print(f"    Parameters:")
+                print(f"      n_clusters: {self.config.n_clusters}")
+                print(f"      n_subquantizers: {self.config.n_subquantizers}")
+                print(f"      bits_per_code: {self.config.bits_per_code}")
+
+                quantizer = faiss.IndexFlatL2(dimension)
+                index = faiss.IndexIVFPQ(
+                    quantizer,
+                    dimension,
+                    self.config.n_clusters,
+                    self.config.n_subquantizers,
+                    self.config.bits_per_code,
+                )
+
+                # Train and add vectors
+                task = progress.add_task("Training FAISS index...", total=None)
+                index.train(embeddings)
+                progress.update(task, completed=True)
+
+                task = progress.add_task(f"Adding {n_vectors:,} vectors to index...", total=None)
+                index.add(embeddings)
+                progress.update(task, completed=True)
 
         # Save index
         faiss.write_index(index, str(self.output_file))
-        print(f"Created FAISS index with {index.ntotal} vectors")
+
+        print(f"\n  Results:")
+        print(f"    Total vectors in index: {index.ntotal:,}")
+        print(f"    Index file: {self.output_file}")
+        if self.output_file.exists():
+            size = self.output_file.stat().st_size
+            print(f"    Index file size: {size:,} bytes")

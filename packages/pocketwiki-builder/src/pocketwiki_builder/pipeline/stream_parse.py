@@ -51,15 +51,31 @@ class StreamParseStage(Stage):
 
     def run(self) -> None:
         """Execute streaming parse with checkpoint support."""
+        print(f"\n  Source URL: {self.config.source_url}")
+        print(f"  Output file: {self.output_file}")
+
         # Check if we should resume
         if self.config.force_restart:
             checkpoint = None
+            print(f"  Force restart: enabled - ignoring any existing checkpoint")
         else:
             checkpoint = self.checkpoint_mgr.load_checkpoint()
+            if checkpoint:
+                print(f"  Checkpoint found:")
+                print(f"    Pages processed: {checkpoint.pages_processed:,}")
+                print(f"    Bytes read: {checkpoint.compressed_bytes_read:,}")
+                print(f"    Last checkpoint: {checkpoint.last_checkpoint_time}")
+            else:
+                print(f"  No checkpoint found")
 
         if checkpoint and self._should_resume_from_checkpoint():
+            print(f"\n  Decision: RESUMING from checkpoint")
             self._resume_parse()
         else:
+            if checkpoint:
+                print(f"\n  Decision: Starting FRESH (checkpoint invalid or output missing)")
+            else:
+                print(f"\n  Decision: Starting FRESH (no checkpoint)")
             self._fresh_parse()
 
     def _should_resume_from_checkpoint(self) -> bool:
@@ -90,14 +106,17 @@ class StreamParseStage(Stage):
         """Start fresh parse from beginning."""
         # Create output directory
         self.output_dir.mkdir(parents=True, exist_ok=True)
+        print(f"  Output directory created: {self.output_dir}")
 
         # Get source ETag for validation
         source_etag = None
         if self.config.validate_source_unchanged:
+            print(f"  Fetching source ETag for validation...")
             try:
                 source_etag = get_etag(str(self.config.source_url))
-            except Exception:
-                pass
+                print(f"  Source ETag: {source_etag}")
+            except Exception as e:
+                print(f"  Could not get ETag: {e}")
 
         # Open output file
         with open(self.output_file, "w") as out_file:

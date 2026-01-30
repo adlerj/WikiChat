@@ -1,8 +1,12 @@
 """Shared Pydantic schemas for PocketWiki."""
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Union, Annotated
 
-from pydantic import BaseModel, ConfigDict, Field, HttpUrl
+from pydantic import BaseModel, ConfigDict, Field, HttpUrl, AnyUrl, UrlConstraints
+
+
+# Custom type that allows both http(s) and file:// URLs
+FileOrHttpUrl = Annotated[AnyUrl, UrlConstraints(allowed_schemes=["http", "https", "file"])]
 
 
 class StreamParseCheckpoint(BaseModel):
@@ -14,7 +18,7 @@ class StreamParseCheckpoint(BaseModel):
         }
     )
 
-    source_url: HttpUrl
+    source_url: FileOrHttpUrl
     source_etag: Optional[str] = None
     compressed_bytes_read: int = Field(ge=0)
     pages_processed: int = Field(ge=0)
@@ -30,7 +34,7 @@ class StreamParseCheckpoint(BaseModel):
 class StreamParseConfig(BaseModel):
     """Configuration for StreamParse stage."""
 
-    source_url: HttpUrl
+    source_url: FileOrHttpUrl
     output_dir: str = "work/parsed"
     output_filename: str = "articles.jsonl"
 

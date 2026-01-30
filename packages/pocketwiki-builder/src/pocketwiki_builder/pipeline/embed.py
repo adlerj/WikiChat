@@ -37,17 +37,26 @@ class EmbedStage(Stage):
         """Generate embeddings."""
         self.output_file.parent.mkdir(parents=True, exist_ok=True)
 
-        # Load model
+        # Log model loading
+        print(f"\n  Loading embedding model: {self.config.model_name}")
+        print(f"  Batch size: {self.config.batch_size}")
         model = SentenceTransformer(self.config.model_name)
+        print(f"  Model loaded successfully")
+        print(f"  Embedding dimension: {model.get_sentence_embedding_dimension()}")
 
         # Read chunks
+        print(f"\n  Reading chunks from: {self.config.input_file}")
         chunks = []
         with open(self.config.input_file, "r") as f:
             for line in f:
                 chunk = json.loads(line)
                 chunks.append(chunk["text"])
+        print(f"  Loaded {len(chunks):,} chunks")
 
         # Generate embeddings in batches
+        print(f"\n  Generating embeddings...")
+        num_batches = (len(chunks) + self.config.batch_size - 1) // self.config.batch_size
+        print(f"  Total batches: {num_batches}")
         embeddings = model.encode(
             chunks,
             batch_size=self.config.batch_size,
@@ -56,4 +65,7 @@ class EmbedStage(Stage):
 
         # Save embeddings
         np.save(self.output_file, embeddings)
-        print(f"Generated {len(embeddings)} embeddings")
+        print(f"\n  Results:")
+        print(f"    Generated {len(embeddings):,} embeddings")
+        print(f"    Embedding shape: {embeddings.shape}")
+        print(f"    Output file: {self.output_file}")

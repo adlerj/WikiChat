@@ -1,12 +1,63 @@
 """HTTP streaming with bz2 decompression."""
 import bz2
 import time
+from pathlib import Path
 from typing import Iterator, Optional
+from urllib.parse import urlparse
 
 import requests
 from requests.exceptions import HTTPError, Timeout, RequestException
 
 from .errors import HttpStreamError
+
+
+def _stream_from_file(
+    file_path: str,
+    start_byte: int = 0,
+    chunk_size: int = 1024 * 1024,
+) -> Iterator[bytes]:
+    """Stream from a local file, handling bz2 if needed.
+
+    Args:
+        file_path: Path to local file
+        start_byte: Byte offset to resume from (only for uncompressed)
+        chunk_size: Size of chunks to read
+
+    Yields:
+        Byte chunks (decompressed if .bz2)
+    """
+    path = Path(file_path)
+    if not path.exists():
+        raise HttpStreamError(f"Local file not found: {file_path}")
+
+    is_bz2 = path.suffix.lower() == ".bz2"
+
+    if is_bz2:
+        # For bz2 files, we need to read and decompress
+        decompressor = bz2.BZ2Decompressor()
+        with open(path, "rb") as f:
+            if start_byte > 0:
+                f.seek(start_byte)
+            while True:
+                chunk = f.read(chunk_size)
+                if not chunk:
+                    break
+                try:
+                    decompressed = decompressor.decompress(chunk)
+                    if decompressed:
+                        yield decompressed
+                except EOFError:
+                    break
+    else:
+        # Plain XML file - just read directly
+        with open(path, "rb") as f:
+            if start_byte > 0:
+                f.seek(start_byte)
+            while True:
+                chunk = f.read(chunk_size)
+                if not chunk:
+                    break
+                yield chunk
 
 
 def stream_bz2_from_url(
@@ -18,8 +69,10 @@ def stream_bz2_from_url(
 ) -> Iterator[bytes]:
     """Stream bz2-compressed data from URL with resume support.
 
+    Supports both http(s):// and file:// URLs.
+
     Args:
-        url: URL to stream from
+        url: URL to stream from (http://, https://, or file://)
         start_byte: Byte offset to resume from
         chunk_size: Size of chunks to read
         max_retries: Maximum number of retries
@@ -31,6 +84,14 @@ def stream_bz2_from_url(
     Raises:
         HttpStreamError: If streaming fails after retries
     """
+    # Handle file:// URLs
+    parsed = urlparse(url)
+    if parsed.scheme == "file":
+        file_path = parsed.path
+        yield from _stream_from_file(file_path, start_byte, chunk_size)
+        return
+
+    # Handle http(s):// URLs
     headers = {}
     if start_byte > 0:
         headers["Range"] = f"bytes={start_byte}-"
@@ -93,6 +154,15 @@ def get_etag(url: str) -> Optional[str]:
     Raises:
         HttpStreamError: If request fails
     """
+    # For file:// URLs, use file modification time as pseudo-ETag
+    parsed = urlparse(url)
+    if parsed.scheme == "file":
+        file_path = Path(parsed.path)
+        if file_path.exists():
+            mtime = file_path.stat().st_mtime
+            return f"file-mtime-{mtime}"
+        return None
+
     try:
         response = requests.head(url, timeout=30)
         response.raise_for_status()

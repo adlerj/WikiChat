@@ -1,0 +1,44 @@
+<mediawiki xmlns="http://www.mediawiki.org/xml/export-0.10/" version="0.10">
+  <page>
+    <title>Test Article One</title>
+    <ns>0</ns>
+    <id>1</id>
+    <revision>
+      <id>101</id>
+      <timestamp>2024-01-01T00:00:00Z</timestamp>
+      <contributor>
+        <username>TestBot</username>
+        <id>1</id>
+      </contributor>
+      <text xml:space="preserve">'''Test Article One''' is the first test article in this minimal Wikipedia dump. It contains enough text to be chunked and embedded properly. This article discusses testing methodologies and best practices for software development. Unit tests are automated tests that verify individual components work correctly in isolation. Integration tests verify that multiple components work together properly. End-to-end tests simulate real user workflows through the entire application stack.</text>
+    </revision>
+  </page>
+  <page>
+    <title>Test Article Two</title>
+    <ns>0</ns>
+    <id>2</id>
+    <revision>
+      <id>102</id>
+      <timestamp>2024-01-01T00:00:00Z</timestamp>
+      <contributor>
+        <username>TestBot</username>
+        <id>1</id>
+      </contributor>
+      <text xml:space="preserve">'''Test Article Two''' covers the topic of search engines and information retrieval. Search engines use inverted indexes to quickly find documents containing specific terms. Vector embeddings allow semantic search by representing text as dense numerical vectors. Hybrid search combines keyword-based and semantic approaches for better results. FAISS is a library for efficient similarity search developed by Facebook AI Research.</text>
+    </revision>
+  </page>
+  <page>
+    <title>Test Article Three</title>
+    <ns>0</ns>
+    <id>3</id>
+    <revision>
+      <id>103</id>
+      <timestamp>2024-01-01T00:00:00Z</timestamp>
+      <contributor>
+        <username>TestBot</username>
+        <id>1</id>
+      </contributor>
+      <text xml:space="preserve">'''Test Article Three''' explains machine learning and natural language processing concepts. Large language models are trained on vast amounts of text data. They learn patterns in language and can generate coherent text responses. Retrieval-augmented generation combines search with generation for more accurate responses. RAG systems first retrieve relevant documents then use them to ground the LLM response.</text>
+    </revision>
+  </page>
+</mediawiki>

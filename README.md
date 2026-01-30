@@ -19,6 +19,15 @@ PocketWikiRAG consists of two applications:
 
 ## Installation
 
+The easiest way to set up the development environment is using the Makefile:
+
+```bash
+# Install all dependencies (creates .venv)
+make install
+```
+
+Or manually:
+
 ```bash
 # Install all packages in development mode
 pip install -e packages/pocketwiki-shared
@@ -49,17 +58,47 @@ pocketwiki-chat serve --bundle my_bundle/
 
 Then open http://localhost:8000 in your browser.
 
-## Development
+## Development with Makefile
+
+```bash
+# Install all dependencies (creates .venv)
+make install
+
+# Run the builder (creates Wikipedia bundle)
+make build ARGS="build --out ./output"
+
+# Run with local test file
+make build ARGS="build --out ./output --source-url file://$(pwd)/tests/fixtures/tiny_wiki.xml"
+
+# Run the chat server
+make run ARGS="serve --bundle ./output/bundle"
+
+# Run all tests
+make test
+
+# Clean up (removes .venv and caches)
+make clean
+```
 
 ### Running tests
 
 ```bash
-pytest tests/
+# Using make
+make test
+
+# Or directly with pytest
+.venv/bin/pytest tests/ -v
+
+# Run specific test file
+.venv/bin/pytest tests/unit/test_cli.py -v
+
+# Run with coverage report
+.venv/bin/pytest tests/ --cov
 ```
 
 ### Project structure
 
-See `PockedWiki.spec` for detailed architecture and implementation plan.
+See `CLAUDE.md` for detailed architecture documentation.
 
 ## License
 
