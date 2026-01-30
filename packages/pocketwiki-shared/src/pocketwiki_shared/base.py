@@ -2,7 +2,7 @@
 import hashlib
 import json
 from abc import ABC, abstractmethod
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
 
@@ -85,7 +85,7 @@ class Stage(ABC):
             stage_name=self.get_stage_name(),
             input_hash=self.compute_input_hash(),
             completed=True,
-            completed_at=datetime.utcnow().isoformat(),
+            completed_at=datetime.now(timezone.utc).isoformat(),
             output_files=[str(f) for f in self.get_output_files()],
         )
 

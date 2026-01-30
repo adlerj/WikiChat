@@ -1,7 +1,7 @@
 """StreamParse stage - streams and parses Wikipedia dumps with checkpointing."""
 import hashlib
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 from io import BytesIO
 from pathlib import Path
 from typing import Optional
@@ -237,7 +237,7 @@ class StreamParseStage(Stage):
                         last_page_title=article.get("title"),
                         output_file=str(self.output_file),
                         output_bytes_written=bytes_written,
-                        last_checkpoint_time=datetime.utcnow().isoformat(),
+                        last_checkpoint_time=datetime.now(timezone.utc).isoformat(),
                     )
                     self.checkpoint_mgr.save_checkpoint(checkpoint)
                     self.checkpoint_mgr.reset_counters()
@@ -252,7 +252,7 @@ class StreamParseStage(Stage):
                 last_page_title=last_article.get("title") if last_article else None,
                 output_file=str(self.output_file),
                 output_bytes_written=bytes_written,
-                last_checkpoint_time=datetime.utcnow().isoformat(),
+                last_checkpoint_time=datetime.now(timezone.utc).isoformat(),
             )
             self.checkpoint_mgr.save_checkpoint(checkpoint)
 

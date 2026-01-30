@@ -3,7 +3,7 @@ import asyncio
 import json
 import logging
 from pathlib import Path
-from typing import AsyncGenerator, Optional
+from typing import AsyncGenerator, Dict, Optional
 
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import HTMLResponse, StreamingResponse
@@ -34,6 +34,8 @@ class AppState:
         self.sparse_retriever = None
         self.llm_generator = None
         self.chunks: list = []
+        self.chunks_by_id: Dict[str, dict] = {}  # O(1) lookup index
+        self.chunks_by_page: Dict[str, list] = {}  # Group by page_id
         self.is_loaded = False
 
     def load_bundle(self, bundle_dir: Path, model_path: Optional[Path] = None) -> None:
@@ -64,14 +66,24 @@ class AppState:
             except Exception as e:
                 logger.warning(f"Failed to load sparse retriever: {e}")
 
-        # Load chunks
+        # Load chunks and build indices
         chunks_path = loader.get_chunks_path()
         if chunks_path.exists():
             self.chunks = []
-            with open(chunks_path) as f:
+            self.chunks_by_id = {}
+            self.chunks_by_page = {}
+            with open(chunks_path, encoding="utf-8") as f:
                 for line in f:
-                    self.chunks.append(json.loads(line))
-            logger.info(f"Loaded {len(self.chunks)} chunks")
+                    chunk = json.loads(line)
+                    self.chunks.append(chunk)
+                    # Build O(1) lookup indices
+                    chunk_id = str(chunk.get("chunk_id", ""))
+                    page_id = str(chunk.get("page_id", ""))
+                    self.chunks_by_id[chunk_id] = chunk
+                    if page_id not in self.chunks_by_page:
+                        self.chunks_by_page[page_id] = []
+                    self.chunks_by_page[page_id].append(chunk)
+            logger.info(f"Loaded {len(self.chunks)} chunks with indices")
 
         # Load LLM if model path provided
         if model_path and model_path.exists():
@@ -162,8 +174,8 @@ def create_app(
     @app.get("/api/page/{page_id}")
     async def get_page(page_id: str):
         """Get full page content."""
-        # Find chunks for this page
-        page_chunks = [c for c in app_state.chunks if str(c.get("page_id")) == page_id]
+        # Use indexed lookup O(1) instead of linear search O(n)
+        page_chunks = app_state.chunks_by_page.get(page_id, [])
 
         if not page_chunks:
             raise HTTPException(status_code=404, detail="Page not found")
@@ -220,16 +232,12 @@ async def _search_sources(query: str, top_k: int = 10) -> list:
     else:
         fused = []
 
-    # Enrich with chunk data
+    # Enrich with chunk data using indexed lookup O(1)
     results = []
     for item in fused[:top_k]:
-        chunk_id = item["chunk_id"]
-        # Find chunk by ID
-        chunk = None
-        for c in app_state.chunks:
-            if str(c.get("chunk_id")) == str(chunk_id):
-                chunk = c
-                break
+        chunk_id = str(item["chunk_id"])
+        # Use indexed lookup instead of linear search
+        chunk = app_state.chunks_by_id.get(chunk_id)
 
         if chunk:
             results.append({

@@ -7,15 +7,22 @@ import numpy as np
 from sentence_transformers import SentenceTransformer
 
 
+DEFAULT_EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
+
+
 class DenseRetriever:
     """Dense vector search with FAISS."""
 
-    def __init__(self, index_path: Path, model_name: str):
+    def __init__(
+        self,
+        index_path: Path,
+        model_name: str = DEFAULT_EMBEDDING_MODEL,
+    ):
         """Initialize retriever.
 
         Args:
             index_path: Path to FAISS index
-            model_name: Sentence-transformers model name
+            model_name: Sentence-transformers model name (default: all-MiniLM-L6-v2)
         """
         self.index = faiss.read_index(str(index_path))
         self.model = SentenceTransformer(model_name)

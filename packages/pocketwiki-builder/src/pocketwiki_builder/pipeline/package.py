@@ -2,7 +2,7 @@
 import hashlib
 import json
 import shutil
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 from pocketwiki_shared.base import Stage
@@ -49,7 +49,7 @@ class PackageStage(Stage):
         # Create manifest
         manifest = {
             "version": "0.1.0",
-            "created_at": datetime.utcnow().isoformat(),
+            "created_at": datetime.now(timezone.utc).isoformat(),
             "num_articles": 0,  # Would count from parsed
             "num_chunks": 0,  # Would count from chunks
         }
