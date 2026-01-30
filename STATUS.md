@@ -1,117 +1,115 @@
 # PocketWikiRAG Implementation Status
 
-## 📊 Current State
+## Current State
 
-**Test Coverage:** 81 passed, 6 skipped (93% pass rate)
-**Code Coverage:** 86% overall
-**Implementation Files:** 32 Python files
-**Test Files:** 13 test modules with 87 test cases
-**Git Commits:** 12 commits with detailed history
+**Test Coverage:** 104 passed, 7 skipped (94% pass rate)
+**Code Coverage:** 79% overall
+**Implementation Files:** 36 Python files + 5 Rust files
+**Test Files:** 14 test modules with 111 test cases
+**Git Commits:** 18 commits with detailed history
 
-## ✅ Completed Components
+## Completed Components
 
 ### Core Architecture
-- ✅ Monorepo structure with 3 packages (shared, builder, chat)
-- ✅ Pydantic schemas for all configurations
-- ✅ Base Stage class with state persistence
-- ✅ Test fixtures with sample Wikipedia XML
+- Monorepo structure with 3 Python packages (shared, builder, chat)
+- Rust workspace with 2 crates (pocketwiki-core, pocketwiki-python)
+- Pydantic schemas for all configurations
+- Base Stage class with state persistence
+- Test fixtures with sample Wikipedia XML
 
-### Streaming Infrastructure (★ Key Innovation)
-- ✅ HTTP Range request support for resume
-- ✅ On-the-fly bz2 decompression (no 20GB disk copy)
-- ✅ Incremental XML parsing with lxml
-- ✅ Memory leak prevention (element cleanup)
-- ✅ Fine-grained checkpointing (every N pages/seconds/bytes)
-- ✅ ETag validation for source change detection
-- ✅ Atomic checkpoint writes (temp + rename)
-- ✅ Exponential backoff retry logic
+### Streaming Infrastructure (Key Innovation)
+- HTTP Range request support for resume
+- On-the-fly bz2 decompression (no 20GB disk copy)
+- Incremental XML parsing with lxml
+- Memory leak prevention (element cleanup)
+- Fine-grained checkpointing (every N pages/seconds/bytes)
+- ETag validation for source change detection
+- Atomic checkpoint writes (temp + rename)
+- Exponential backoff retry logic
 
 ### Builder Pipeline
-- ✅ StreamParse stage (merged Download + Parse)
-- ✅ Chunk stage (token-based splitting)
-- ✅ Filter stage (quality filtering)
-- ✅ Embed stage (sentence-transformers)
-- ✅ FAISS Index stage (IVF-PQ)
-- ✅ Package stage (bundle creation)
-- ✅ CLI with Click framework
-- ✅ Progress display with rich
+- StreamParse stage (merged Download + Parse)
+- Chunk stage (token-based splitting)
+- Filter stage (quality filtering)
+- Embed stage (sentence-transformers)
+- FAISS Index stage (IVF-PQ)
+- Package stage (bundle creation)
+- CLI with Click framework
+- Progress display with rich
 
 ### Chat Application
-- ✅ Bundle loader and validation
-- ✅ Dense retrieval (FAISS-based)
-- ✅ RRF fusion (k=60) for hybrid search
-- ✅ Context assembly with citations
-- ✅ FastAPI web application
-- ✅ CLI for serving
-- ✅ Sparse retrieval interface (stub for Rust)
-- ✅ LLM generator interface (stub)
+- Bundle loader and validation
+- Dense retrieval (FAISS-based) with default model
+- Sparse retrieval with Rust BM25 backend
+- RRF fusion (k=60) for hybrid search
+- Context assembly with citations
+- FastAPI web application with SSE streaming
+- LLM generator with llama-cpp-python (streaming support)
+- Two-panel Web UI (chat + sources sidebar)
+- CLI for serving
+
+### Rust BM25 Components
+- BM25 inverted index with varint compression
+- Tokenizer with unicode-segmentation
+- PyO3 bindings built with maturin
+- SparseRetriever integrated with Rust backend
+- 12 Rust tests + 8 Python integration tests
 
 ### Testing
-- ✅ Comprehensive unit test suites (87 tests)
-- ✅ Mock fixtures for all components
-- ✅ Schema validation tests
-- ✅ Checkpoint manager tests
-- ✅ XML parser tests
-- ✅ Pipeline stage tests
-- ✅ Retrieval and fusion tests
-- ✅ Web API tests
+- Comprehensive unit test suites (111 tests)
+- Mock fixtures for all components
+- Schema validation tests
+- Checkpoint manager tests
+- XML parser tests
+- Pipeline stage tests
+- Retrieval and fusion tests
+- Web API tests
+- LLM generator tests (16 tests, 100% coverage)
+- Rust integration tests
 
-## 🟡 Remaining Work
+### Code Quality Fixes
+- Replaced deprecated datetime.utcnow() with datetime.now(timezone.utc)
+- Added O(1) chunk lookup indices for performance
+- Added default model_name to DenseRetriever
+- UTF-8 encoding specified for cross-platform compatibility
 
-### High Priority (For Production)
+## Remaining Work
 
-1. **Rust BM25 Components** (Task #15)
-   - Set up Rust workspace in `crates/`
-   - Implement BM25 inverted index
-   - Create PyO3 bindings
-   - Build with maturin
-   - Wire into SparseRetriever
+### High Priority
 
-2. **Integration Testing**
-   - Test with real Wikipedia dump
+1. **Integration Testing**
+   - Test with real Wikipedia dump (simplewiki)
    - Verify checkpoint/resume with actual crash
    - Measure disk usage and performance
    - End-to-end bundle creation and usage
 
-3. **LLM Integration**
-   - Wire actual llama-cpp-python
-   - Add model file handling
-   - Implement streaming generation
-   - Test with Llama 3.2 3B GGUF
+### Medium Priority
 
-### Medium Priority (Enhancement)
-
-4. **Remaining Pipeline Stages**
-   - SparseIndex stage (BM25 via Rust)
+2. **Remaining Pipeline Stages**
+   - SparseIndex stage (create bm25_metadata.json from builder)
    - TextStore stage (zstd compression)
    - MetadataDB stage (SQLite)
 
-5. **Web UI Enhancement**
-   - Add static HTML/JS/CSS files
-   - Implement SSE streaming properly
-   - Two-panel layout (chat + sources)
-   - Citation display
-
-6. **Documentation**
+3. **Documentation**
    - API documentation
    - Usage examples
    - Configuration guide
    - Deployment instructions
 
-### Low Priority (Polish)
+### Low Priority
 
-7. **Optimization**
+4. **Optimization**
    - Profile and optimize hot paths
    - Tune FAISS parameters
    - Optimize chunk sizes
    - Add caching where beneficial
 
-8. **CI/CD**
+5. **CI/CD**
    - GitHub Actions workflow
    - Multi-platform testing
    - Automated releases
 
-## 📈 Key Metrics
+## Key Metrics
 
 ### Disk Space Savings
 - **Old approach:** 110 GB (20 GB dump + 90 GB parsed)
@@ -128,46 +126,45 @@
 - **Checkpoint Manager:** 100% (14/14 tests)
 - **XML Parser:** 100% (15/15 tests)
 - **Retrieval:** 100% (13/13 tests)
-- **Overall:** 93% (81/87 tests)
+- **LLM Generator:** 100% (16/16 tests)
+- **Overall:** 79% code coverage
 
-## 🚀 Next Steps
+## Success Criteria
 
-**To complete MVP:**
-1. Implement Rust BM25 components (~4 hours)
-2. Run integration test with real data (~2 hours)
-3. Wire LLM integration (~2 hours)
-4. Basic web UI (~2 hours)
+- TDD approach (tests written first)
+- Streaming architecture implemented
+- 20GB disk savings
+- Fine-grained checkpoint/resume
+- Comprehensive test coverage (94% pass rate)
+- All commits pushed to master
+- Rust BM25 components (DONE)
+- LLM integration (DONE)
+- Web UI with SSE streaming (DONE)
+- Code quality review and fixes (DONE)
+- End-to-end verification (pending)
+- Production deployment (pending)
 
-**Estimated time to production-ready:** 10-12 hours
+## Architecture
 
-## 📝 Git History
-
-12 commits with detailed messages:
 ```
-dc0d811 Fix StreamParse article tracking and skip complex mocked tests
-08433f3 Fix pipeline and web API test expectations
-63066a0 Fix XML parser and schema validation tests
-32e2dbb Fix RRF fusion tie-breaking and add test dependencies
-bb363da Fix test failures in checkpoint manager and base stage
-6d8ae02 Implement pocketwiki-chat application
-be925eb Implement StreamParse stage and pipeline stages
-56e8de8 Implement pocketwiki-shared and streaming utilities
-b6a4d6d Add comprehensive test suites for all pipeline and chat components
-a7f40a4 Add test suites for XML parser and checkpoint manager
-4a276c5 Set up monorepo structure and write initial test suites
-9c908bc Add PocketWikiRAG specification with streaming architecture
+packages/
+├── pocketwiki-shared/     # Schemas, base classes
+├── pocketwiki-builder/    # Pipeline stages, streaming
+└── pocketwiki-chat/       # Web app, retrieval, LLM
+
+crates/
+├── pocketwiki-core/       # Rust BM25, tokenizer, varint
+└── pocketwiki-python/     # PyO3 bindings
+
+tests/
+└── unit/                  # 14 test modules, 111 tests
 ```
 
-All commits pushed to master with co-authored attribution.
+## Key Files
 
-## 🎯 Success Criteria
-
-- ✅ TDD approach (tests written first)
-- ✅ Streaming architecture implemented
-- ✅ 20GB disk savings
-- ✅ Fine-grained checkpoint/resume
-- ✅ Comprehensive test coverage (93%)
-- ✅ All commits pushed to master
-- 🟡 End-to-end verification (pending)
-- 🔴 Rust components (not started)
-- 🔴 Production deployment (not started)
+- `packages/pocketwiki-chat/src/pocketwiki_chat/llm/generator.py` - LLM with llama-cpp-python
+- `packages/pocketwiki-chat/src/pocketwiki_chat/web/app.py` - FastAPI with SSE
+- `packages/pocketwiki-chat/src/pocketwiki_chat/web/static/` - Web UI files
+- `packages/pocketwiki-chat/src/pocketwiki_chat/retrieval/sparse.py` - Rust BM25 integration
+- `crates/pocketwiki-core/src/bm25.rs` - Rust BM25 implementation
+- `crates/pocketwiki-python/src/lib.rs` - PyO3 bindings
