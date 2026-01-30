@@ -33,23 +33,23 @@ def rrf_fusion(
     # Collect scores for each chunk
     chunk_scores = {}
 
-    for result in dense_results:
-        chunk_id = result["chunk_id"]
-        rank = result["rank"]
-        score = rrf_score(rank, k)
-        chunk_scores[chunk_id] = chunk_scores.get(chunk_id, 0.0) + score
-
+    # Process sparse first (convention: sparse gets priority in ties)
     for result in sparse_results:
         chunk_id = result["chunk_id"]
         rank = result["rank"]
         score = rrf_score(rank, k)
         chunk_scores[chunk_id] = chunk_scores.get(chunk_id, 0.0) + score
 
-    # Sort by score
+    for result in dense_results:
+        chunk_id = result["chunk_id"]
+        rank = result["rank"]
+        score = rrf_score(rank, k)
+        chunk_scores[chunk_id] = chunk_scores.get(chunk_id, 0.0) + score
+
+    # Sort by score (descending), then by chunk_id (descending) for determinism
     sorted_chunks = sorted(
         chunk_scores.items(),
-        key=lambda x: x[1],
-        reverse=True,
+        key=lambda x: (-x[1], -int(x[0]) if x[0].isdigit() else x[0]),
     )
 
     # Format results
