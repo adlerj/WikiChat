@@ -80,6 +80,8 @@ class TestCheckpointManager:
             source_url="http://example.com/dump.xml.bz2",
             compressed_bytes_read=1000,
             pages_processed=10,
+            output_file="test.jsonl",
+            last_checkpoint_time="2026-01-30T10:00:00Z",
         )
 
         # Save checkpoint

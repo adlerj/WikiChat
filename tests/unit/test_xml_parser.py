@@ -20,10 +20,14 @@ class TestWikiXmlParser:
         xml_data = sample_wiki_xml.read_bytes()
         stream = BytesIO(xml_data)
 
-        parser = WikiXmlParser(skip_redirects=False, skip_disambiguation=False)
+        parser = WikiXmlParser(
+            skip_redirects=False,
+            skip_disambiguation=False,
+            allowed_namespaces=[0, 4],  # Include namespace 4 for Wikipedia: pages
+        )
         articles = list(parser.parse(stream))
 
-        # Should get 5 pages total
+        # Should get 5 pages total (all namespaces)
         assert len(articles) == 5
 
         # Check first article
@@ -51,8 +55,8 @@ class TestWikiXmlParser:
         parser = WikiXmlParser(skip_redirects=False, skip_disambiguation=True)
         articles = list(parser.parse(stream))
 
-        # Should skip disambiguation page
-        assert len(articles) == 4
+        # Should skip disambiguation page (only ns=0, minus disambiguation = 3)
+        assert len(articles) == 3
         assert all("disambiguation" not in a["title"] for a in articles)
 
     def test_parse_skip_both(self, sample_wiki_xml: Path) -> None:
@@ -102,9 +106,9 @@ class TestWikiXmlParser:
         second = next(iterator)
         assert second["title"] == "Python (programming language)"
 
-        # Should be able to continue iterating
+        # Should be able to continue iterating (2 more: Quantum + disambiguation)
         remaining = list(iterator)
-        assert len(remaining) == 3
+        assert len(remaining) == 2
 
     def test_parse_malformed_xml_graceful(self) -> None:
         """Test graceful handling of malformed XML."""
